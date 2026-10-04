@@ -2,330 +2,461 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SpinLab 3D V3 · Serve Mechanics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpinLab 3D V4 · Contact Physics</title>
 
 <style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
 :root{
-  --bg:#03110c;
-  --panel:#081d15;
-  --panel2:#0c281d;
-  --line:#174333;
-  --green:#49e596;
-  --blue:#54cfff;
-  --red:#ff5d68;
-  --yellow:#ffd166;
-  --white:#f4faf7;
-  --muted:#91aaa0;
+    --bg:#031711;
+    --panel:#06231a;
+    --panel2:#092b20;
+    --line:#174b39;
+    --green:#45e49a;
+    --green2:#23b77a;
+    --text:#f2fff8;
+    --muted:#93b7a8;
+    --blue:#57d5ff;
+    --red:#ff6572;
+    --yellow:#ffd56a;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:var(--bg);
+    color:var(--text);
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Microsoft YaHei",
+        sans-serif;
+}
+
 body{
-  margin:0;
-  background:
-    radial-gradient(circle at 50% -10%,rgba(73,229,150,.1),transparent 28%),
-    var(--bg);
-  color:var(--white);
-  font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+    display:flex;
+    flex-direction:column;
 }
-button,input{font:inherit}
-button{cursor:pointer}
+
+/* HEADER */
+
 header{
-  position:sticky;
-  top:0;
-  z-index:20;
-  height:68px;
-  background:rgba(3,17,12,.93);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(14px);
+    height:70px;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 34px;
+    border-bottom:1px solid var(--line);
+    background:rgba(2,20,14,.97);
+    z-index:20;
 }
-nav{
-  width:min(1450px,calc(100% - 32px));
-  height:100%;
-  margin:auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-.4px;
 }
-.logo{font-weight:900;font-size:21px}
-.logo span{color:var(--green)}
-nav a{
-  color:var(--muted);
-  text-decoration:none;
-  font-size:13px;
-  margin-left:22px;
+
+.logo span{
+    color:var(--green);
 }
-main{
-  width:min(1450px,calc(100% - 28px));
-  margin:28px auto 60px;
-}
-.hero{
-  display:flex;
-  justify-content:space-between;
-  align-items:end;
-  gap:30px;
-  margin-bottom:24px;
-}
-.eyebrow{
-  color:var(--green);
-  font-size:11px;
-  letter-spacing:2px;
-  font-weight:900;
-}
-h1{
-  margin:8px 0;
-  font-size:clamp(34px,5vw,58px);
-  letter-spacing:-2px;
-}
-.hero p{
-  max-width:720px;
-  margin:0;
-  color:var(--muted);
-  line-height:1.7;
-  font-size:13px;
-}
+
 .version{
-  padding:9px 12px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  color:var(--green);
-  font-size:11px;
-  white-space:nowrap;
+    color:var(--muted);
+    font-size:13px;
+    margin-left:12px;
 }
-.lab{
-  min-height:760px;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 365px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:22px;
-  overflow:hidden;
+
+.header-right{
+    display:flex;
+    gap:20px;
+    color:var(--muted);
+    font-size:14px;
 }
-.viewport{
-  position:relative;
-  min-width:0;
-  min-height:760px;
-  background:#04130e;
-  overflow:hidden;
+
+/* MAIN */
+
+.app{
+    height:calc(100vh - 70px);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 390px;
 }
+
+/* 3D */
+
+.stage{
+    position:relative;
+    min-width:0;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 50% 30%, #0c3024 0%, #031710 55%, #010b08 100%);
+}
+
 #scene{
-  position:absolute;
-  inset:0;
+    width:100%;
+    height:100%;
+    display:block;
 }
-#scene canvas{
-  display:block;
-  width:100%;
-  height:100%;
+
+.lesson-card{
+    position:absolute;
+    top:18px;
+    left:20px;
+    width:min(390px,calc(100% - 40px));
+    padding:15px 17px;
+    background:rgba(3,22,16,.88);
+    border:1px solid rgba(69,228,154,.25);
+    border-radius:16px;
+    backdrop-filter:blur(10px);
+    pointer-events:none;
 }
-.topHUD{
-  position:absolute;
-  top:16px;
-  left:16px;
-  right:16px;
-  z-index:4;
-  display:flex;
-  justify-content:space-between;
-  pointer-events:none;
+
+.lesson-card h3{
+    font-size:15px;
+    margin-bottom:7px;
 }
-.badge{
-  padding:9px 12px;
-  border-radius:10px;
-  background:rgba(3,15,11,.88);
-  border:1px solid rgba(73,229,150,.2);
-  font-size:11px;
+
+.lesson-card p{
+    font-size:13px;
+    line-height:1.65;
+    color:var(--muted);
 }
-#status{color:var(--green);font-weight:900}
-#cameraLabel{color:#9cb2a8}
-.lesson{
-  position:absolute;
-  left:16px;
-  top:62px;
-  width:min(370px,calc(100% - 32px));
-  z-index:4;
-  padding:14px 15px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  background:rgba(3,15,11,.9);
-  pointer-events:none;
-  transition:.25s;
+
+/* STEP CARD */
+
+.step-card{
+    position:absolute;
+    left:20px;
+    bottom:22px;
+    width:340px;
+    max-width:calc(100% - 40px);
+    padding:15px;
+    border-radius:16px;
+    background:rgba(3,22,16,.92);
+    border:1px solid rgba(69,228,154,.28);
+    backdrop-filter:blur(12px);
+    pointer-events:none;
 }
-.lesson strong{
-  display:block;
-  margin-bottom:5px;
-  font-size:15px;
+
+.step-top{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    margin-bottom:10px;
 }
-.lesson p{
-  margin:0;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.6;
+
+.step-number{
+    color:var(--green);
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.8px;
 }
+
+.step-title{
+    font-weight:800;
+    font-size:15px;
+}
+
+.step-desc{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.55;
+    margin-bottom:12px;
+}
+
+.meters{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.meter{
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:10px;
+    padding:9px;
+}
+
+.meter small{
+    display:block;
+    color:var(--muted);
+    font-size:10px;
+    margin-bottom:4px;
+}
+
+.meter strong{
+    font-size:13px;
+}
+
+.blue{ color:var(--blue); }
+.red{ color:var(--red); }
+.green{ color:var(--green); }
+.yellow{ color:var(--yellow); }
+
+/* LEGEND */
+
 .legend{
-  position:absolute;
-  left:16px;
-  bottom:16px;
-  z-index:4;
-  padding:10px 12px;
-  border-radius:11px;
-  background:rgba(3,15,11,.9);
-  border:1px solid var(--line);
-  color:#9eb4aa;
-  font-size:10px;
-  line-height:1.8;
-  pointer-events:none;
+    position:absolute;
+    right:18px;
+    bottom:18px;
+    padding:11px 13px;
+    background:rgba(3,22,16,.82);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    font-size:11px;
+    color:var(--muted);
+    pointer-events:none;
 }
-.legend b:nth-child(1){color:var(--blue)}
-.legend b:nth-child(2){color:var(--yellow)}
-.legend b:nth-child(3){color:var(--red)}
-.legend b:nth-child(4){color:var(--green)}
-.controls{
-  border-left:1px solid var(--line);
-  padding:23px;
-  overflow:auto;
+
+.legend div{
+    margin:5px 0;
 }
-.controls h2{
-  margin:0 0 7px;
-  font-size:24px;
+
+.dot{
+    width:9px;
+    height:9px;
+    display:inline-block;
+    border-radius:50%;
+    margin-right:7px;
 }
-.controls>p{
-  margin:0;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.65;
+
+.dot.green{background:var(--green);}
+.dot.blue{background:var(--blue);}
+.dot.red{background:var(--red);}
+
+/* CONTROL PANEL */
+
+.panel{
+    height:100%;
+    overflow:auto;
+    padding:22px;
+    border-left:1px solid var(--line);
+    background:#041d15;
 }
-.label{
-  display:block;
-  margin:20px 0 8px;
-  font-size:11px;
-  font-weight:900;
+
+.panel::-webkit-scrollbar{
+    width:7px;
 }
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:7px;
+
+.panel::-webkit-scrollbar-thumb{
+    background:#1c513e;
+    border-radius:10px;
 }
-.spinBtn,.viewBtn,.action{
-  min-height:46px;
-  padding:9px 7px;
-  color:#9fb4aa;
-  background:#0b241a;
-  border:1px solid var(--line);
-  border-radius:11px;
+
+.panel h2{
+    font-size:18px;
+    margin-bottom:6px;
 }
-.spinBtn:hover,.viewBtn:hover,.action:hover{
-  border-color:#398066;
+
+.intro{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+    margin-bottom:22px;
 }
-.spinBtn.active,.viewBtn.active{
-  color:#03100b;
-  background:var(--green);
-  border-color:var(--green);
-  font-weight:900;
+
+.section{
+    margin-bottom:22px;
 }
-.rangeTop{
-  display:flex;
-  justify-content:space-between;
-  color:var(--muted);
-  font-size:10px;
+
+.section-title{
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:10px;
 }
-.rangeTop b{color:var(--green)}
-input[type=range]{
-  width:100%;
-  accent-color:var(--green);
+
+.spin-grid,
+.view-grid,
+.action-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
 }
-.switchRow{
-  margin-top:17px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  color:var(--muted);
-  font-size:11px;
+
+button{
+    font:inherit;
 }
+
+.control-btn{
+    min-height:50px;
+    border-radius:13px;
+    border:1px solid var(--line);
+    background:#08261c;
+    color:#9cbbae;
+    font-size:15px;
+    cursor:pointer;
+    transition:.18s ease;
+}
+
+.control-btn:hover{
+    border-color:#2d7d5d;
+    color:white;
+}
+
+.control-btn.active{
+    background:var(--green);
+    color:#022016;
+    border-color:var(--green);
+    font-weight:800;
+}
+
+.slider-row{
+    display:flex;
+    justify-content:space-between;
+    color:var(--muted);
+    font-size:11px;
+    margin-bottom:7px;
+}
+
+.slider-row strong{
+    color:var(--green);
+}
+
+input[type="range"]{
+    width:100%;
+    accent-color:var(--green);
+}
+
+.primary{
+    background:var(--green);
+    color:#022016;
+    border:none;
+    font-weight:900;
+}
+
+.secondary{
+    color:#b8d1c6;
+}
+
+.primary:disabled,
+.control-btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+
+.toggle-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:var(--muted);
+    font-size:12px;
+}
+
 .switch{
-  width:45px;
-  height:25px;
-  padding:0;
-  border:0;
-  border-radius:999px;
-  background:#294037;
-  position:relative;
+    width:47px;
+    height:27px;
+    border-radius:30px;
+    background:#173c2f;
+    position:relative;
+    cursor:pointer;
 }
-.switch:after{
-  content:"";
-  width:19px;
-  height:19px;
-  position:absolute;
-  top:3px;
-  left:3px;
-  border-radius:50%;
-  background:#fff;
-  transition:.2s;
+
+.switch::after{
+    content:"";
+    width:21px;
+    height:21px;
+    background:white;
+    border-radius:50%;
+    position:absolute;
+    top:3px;
+    left:3px;
+    transition:.2s;
 }
-.switch.on{background:var(--green)}
-.switch.on:after{left:23px}
-.actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:7px;
-  margin-top:20px;
+
+.switch.on{
+    background:var(--green);
 }
-.action.primary{
-  color:#03100b;
-  background:var(--green);
-  border-color:var(--green);
-  font-weight:900;
+
+.switch.on::after{
+    left:23px;
 }
-.info{
-  margin-top:18px;
-  padding:14px;
-  background:#0c281d;
-  border-radius:13px;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.6;
+
+.info-box{
+    padding:14px;
+    background:#08271d;
+    border-radius:14px;
+    border:1px solid rgba(69,228,154,.08);
 }
-.info h3{
-  color:var(--green);
-  font-size:18px;
-  margin:0 0 5px;
+
+.info-box h3{
+    color:var(--green);
+    margin-bottom:7px;
+    font-size:16px;
 }
-.metrics{
-  margin-top:11px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px;
+
+.info-box p{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.65;
 }
-.metric{
-  background:#061710;
-  padding:9px;
-  border-radius:8px;
+
+.physics{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.07);
+    font-size:11px;
+    color:#7fa696;
+    line-height:1.7;
 }
-.metric small{
-  display:block;
-  color:#658176;
-  font-size:8px;
-  letter-spacing:.5px;
+
+/* CONTACT BADGE */
+
+.contact-badge{
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:rgba(3,22,16,.88);
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:100px;
+    padding:8px 13px;
+    font-size:11px;
+    color:var(--muted);
+    pointer-events:none;
 }
-.metric b{
-  display:block;
-  margin-top:3px;
-  color:white;
-  font-size:10px;
+
+.contact-badge.touch{
+    color:#061a12;
+    background:var(--yellow);
+    border-color:var(--yellow);
+    font-weight:900;
 }
-.warning{
-  margin-top:20px;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid rgba(255,209,102,.18);
-  background:rgba(255,209,102,.05);
-  color:#c8b984;
-  font-size:10px;
-  line-height:1.6;
-}
+
+/* MOBILE */
+
 @media(max-width:900px){
-  .lab{grid-template-columns:1fr}
-  .viewport{min-height:600px}
-  .controls{border-left:0;border-top:1px solid var(--line)}
-  nav .links{display:none}
+    html,body{
+        overflow:auto;
+    }
+
+    .app{
+        height:auto;
+        display:block;
+    }
+
+    .stage{
+        height:70vh;
+        min-height:520px;
+    }
+
+    .panel{
+        height:auto;
+        border-left:none;
+        border-top:1px solid var(--line);
+    }
+
+    .legend{
+        display:none;
+    }
 }
 </style>
 </head>
@@ -333,1717 +464,1720 @@ input[type=range]{
 <body>
 
 <header>
-<nav>
-  <div class="logo">🏓 Spin<span>Lab 3D V3</span></div>
-  <div class="links">
-    <a href="#lab">发球实验室</a>
-    <a href="#controls">控制台</a>
-  </div>
-</nav>
+    <div>
+        <span class="logo">🏓 Spin<span>Lab 3D V4</span></span>
+        <span class="version">CONTACT PHYSICS</span>
+    </div>
+
+    <div class="header-right">
+        <span>真实接触</span>
+        <span>分解教学</span>
+    </div>
 </header>
 
-<main>
+<div class="app">
 
-<div class="hero">
-  <div>
-    <div class="eyebrow">SERVE MECHANICS · CONTACT · SPIN</div>
-    <h1>看清楚，球到底是怎么被擦出来的。</h1>
-    <p>
-      V3 把镜头放在球的一侧，而不是拍面正前方。
-      触球时观察接触点、擦球方向和旋转箭头；
-      球离拍以后，镜头继续跟随球观察三维旋转。
-    </p>
-  </div>
-  <div class="version">V3 · Serve Mechanics</div>
+    <main class="stage" id="stage">
+        <canvas id="scene"></canvas>
+
+        <div class="lesson-card">
+            <h3 id="lessonTitle">🏓 上旋 · 从向前到向上摩擦</h3>
+            <p id="lessonText">
+                球拍先接近球。真正接触以前球不会旋转；
+                接触后，向前分量给球速度，向上的切向摩擦产生上旋。
+            </p>
+        </div>
+
+        <div class="contact-badge" id="contactBadge">
+            ● 尚未接触
+        </div>
+
+        <div class="step-card">
+            <div class="step-top">
+                <span class="step-number" id="stepNumber">STEP 1 / 5</span>
+                <span class="step-title" id="stepTitle">准备</span>
+            </div>
+
+            <div class="step-desc" id="stepDesc">
+                球保持静止。观察球拍从哪里接近球。
+            </div>
+
+            <div class="meters">
+                <div class="meter">
+                    <small>球拍向前分量</small>
+                    <strong class="green" id="forwardValue">0.0 m/s</strong>
+                </div>
+
+                <div class="meter">
+                    <small>球拍切向分量</small>
+                    <strong class="blue" id="brushValue">0.0 m/s</strong>
+                </div>
+
+                <div class="meter">
+                    <small>球线速度</small>
+                    <strong class="yellow" id="ballSpeedValue">0.0 m/s</strong>
+                </div>
+
+                <div class="meter">
+                    <small>球旋转</small>
+                    <strong class="red" id="spinValue">0 rpm</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div><span class="dot green"></span>绿色：球拍前进方向</div>
+            <div><span class="dot blue"></span>蓝色：摩擦 / 刷球方向</div>
+            <div><span class="dot red"></span>红色：球的旋转方向</div>
+        </div>
+    </main>
+
+    <aside class="panel">
+
+        <h2>V4 发球实验室</h2>
+        <p class="intro">
+            这次动画把“接近 → 接触 → 推进 → 摩擦 → 分离”拆开。
+            球只有真正接触胶皮以后才会获得速度和旋转。
+        </p>
+
+        <section class="section">
+            <div class="section-title">旋转类型</div>
+
+            <div class="spin-grid">
+                <button class="control-btn spin-btn active" data-spin="topspin">上旋</button>
+                <button class="control-btn spin-btn" data-spin="backspin">下旋</button>
+                <button class="control-btn spin-btn" data-spin="leftspin">左侧旋</button>
+                <button class="control-btn spin-btn" data-spin="rightspin">右侧旋</button>
+                <button class="control-btn spin-btn" data-spin="sidetop">侧上旋</button>
+                <button class="control-btn spin-btn" data-spin="sideback">侧下旋</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-title">旋转强度</div>
+
+            <div class="slider-row">
+                <span>弱</span>
+                <strong id="strengthLabel">70%</strong>
+            </div>
+
+            <input id="strength" type="range" min="30" max="100" value="70">
+        </section>
+
+        <section class="section">
+            <div class="section-title">观察视角</div>
+
+            <div class="view-grid">
+                <button class="control-btn view-btn active" data-view="contact">触球教学</button>
+                <button class="control-btn view-btn" data-view="wide">全景</button>
+                <button class="control-btn view-btn" data-view="server">发球方</button>
+                <button class="control-btn view-btn" data-view="top">俯视</button>
+                <button class="control-btn view-btn" data-view="follow">跟球</button>
+                <button class="control-btn view-btn" data-view="receiver">接球方</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="toggle-row">
+                <span>自动教学镜头</span>
+                <div class="switch on" id="autoCamera"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="action-grid">
+                <button class="control-btn primary" id="runBtn">▶ 运行发球</button>
+                <button class="control-btn secondary" id="slowBtn">🐢 慢动作</button>
+                <button class="control-btn secondary" id="pauseBtn">Ⅱ 暂停</button>
+                <button class="control-btn secondary" id="resetBtn">↻ 重置</button>
+            </div>
+        </section>
+
+        <section class="info-box">
+            <h3 id="infoTitle">上旋</h3>
+            <p id="infoText">
+                球拍在接触球以后继续向前，同时沿球的后表面向上刷。
+                向前分量主要产生出球速度，向上的切向摩擦产生上旋。
+            </p>
+
+            <div class="physics">
+                教学模型：球拍被视为有限圆形拍面，球被视为球体。
+                接触时使用拍面法向距离约束，避免球心进入胶皮表面。
+            </div>
+        </section>
+
+    </aside>
 </div>
 
-<div class="lab" id="lab">
-
-  <div class="viewport">
-    <div id="scene"></div>
-
-    <div class="topHUD">
-      <div class="badge" id="status">准备发球</div>
-      <div class="badge" id="cameraLabel">镜头：球旁观察</div>
-    </div>
-
-    <div class="lesson">
-      <strong id="lessonTitle">🏓 上旋 · 基础擦球示范</strong>
-      <p id="lessonText">
-        球拍从球的后下方接近，在球面外侧向前上方擦过。
-      </p>
-    </div>
-
-    <div class="legend">
-      <b>蓝色</b>：球拍擦球方向<br>
-      <b>黄色</b>：接触点<br>
-      <b>红色</b>：旋转轴 / 环绕旋转箭头<br>
-      <b>绿色</b>：球飞行方向
-    </div>
-  </div>
-
-  <aside class="controls" id="controls">
-
-    <h2>实验控制台</h2>
-    <p>
-      先比较上旋与下旋，再比较侧上旋与侧下旋。
-      触球阶段会自动进入超慢动作。
-    </p>
-
-    <span class="label">旋转类型</span>
-
-    <div class="grid">
-      <button class="spinBtn active" data-spin="top">上旋</button>
-      <button class="spinBtn" data-spin="back">下旋</button>
-      <button class="spinBtn" data-spin="left">左侧旋</button>
-      <button class="spinBtn" data-spin="right">右侧旋</button>
-      <button class="spinBtn" data-spin="topSide">侧上旋</button>
-      <button class="spinBtn" data-spin="backSide">侧下旋</button>
-    </div>
-
-    <span class="label">旋转强度</span>
-
-    <div class="rangeTop">
-      <span>弱</span>
-      <b id="spinValue">70%</b>
-    </div>
-
-    <input id="spinStrength" type="range" min="25" max="100" value="70">
-
-    <span class="label">手动观察视角</span>
-
-    <div class="grid">
-      <button class="viewBtn active" data-view="ballside">球旁</button>
-      <button class="viewBtn" data-view="wide">全景</button>
-      <button class="viewBtn" data-view="server">发球方</button>
-      <button class="viewBtn" data-view="top">俯视</button>
-      <button class="viewBtn" data-view="contact">🔬 触球</button>
-      <button class="viewBtn" data-view="follow">🎥 跟球</button>
-    </div>
-
-    <div class="switchRow">
-      <span>自动导演镜头</span>
-      <button class="switch on" id="director"></button>
-    </div>
-
-    <div class="actions">
-      <button class="action primary" id="run">▶ 运行发球</button>
-      <button class="action" id="slow">🐢 全程慢放</button>
-      <button class="action" id="pause">⏸ 暂停</button>
-      <button class="action" id="reset">↻ 重置</button>
-    </div>
-
-    <div class="info">
-      <h3 id="spinName">上旋</h3>
-      <div id="description">
-        基础示范：从后下方接近，在球面外侧向前上方擦过。
-      </div>
-
-      <div class="metrics">
-        <div class="metric">
-          <small>接触区域</small>
-          <b id="contactText">后下部</b>
-        </div>
-        <div class="metric">
-          <small>擦球方向</small>
-          <b id="brushText">前上方</b>
-        </div>
-        <div class="metric">
-          <small>旋转轴</small>
-          <b id="axisText">横向</b>
-        </div>
-        <div class="metric">
-          <small>视觉提示</small>
-          <b>动态环形箭头</b>
-        </div>
-      </div>
-    </div>
-
-    <div class="warning">
-      这是用于理解旋转机制的教学模拟。
-      实际发球动作会因正手/反手、握拍、拍面角度、胶皮和技术动作而不同。
-    </div>
-
-  </aside>
-
-</div>
-
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
 
 <script>
 "use strict";
 
 /* =========================================================
-   BASIC CONSTANTS
+   BASIC THREE.JS SETUP
 ========================================================= */
 
-const BALL_R = 0.14;
-const PADDLE_R = 0.34;
-const PADDLE_T = 0.052;
-const CONTACT_GAP = 0.012;
-
-const WORLD_UP = new THREE.Vector3(0,1,0);
-const FLIGHT_DIR = new THREE.Vector3(1,0,0);
-
-const $ = id => document.getElementById(id);
-
-const dom = {
-  scene:$("scene"),
-  status:$("status"),
-  cameraLabel:$("cameraLabel"),
-  lessonTitle:$("lessonTitle"),
-  lessonText:$("lessonText"),
-  spinStrength:$("spinStrength"),
-  spinValue:$("spinValue"),
-  spinName:$("spinName"),
-  description:$("description"),
-  contactText:$("contactText"),
-  brushText:$("brushText"),
-  axisText:$("axisText"),
-  director:$("director"),
-  run:$("run"),
-  slow:$("slow"),
-  pause:$("pause"),
-  reset:$("reset")
-};
-
-/* =========================================================
-   SPIN DEFINITIONS
-
-   contactLocal:
-   direction from ball centre toward the approximate
-   contact point.
-
-   brush:
-   tangential direction of racket movement.
-
-   axis:
-   angular velocity axis.
-========================================================= */
-
-const spinData = {
-  top:{
-    name:"上旋",
-    contact:"后下部",
-    brushText:"前上方",
-    axisText:"横向",
-    description:"基础示范：球拍从后下方接近，在球面外侧向前上方擦过。",
-    contactLocal:new THREE.Vector3(-0.72,-0.69,0).normalize(),
-    brush:new THREE.Vector3(0.58,0.82,0).normalize(),
-    axis:new THREE.Vector3(0,0,-1),
-    curveY:-0.18,
-    curveZ:0
-  },
-
-  back:{
-    name:"下旋",
-    contact:"后下/后侧",
-    brushText:"前下方切擦",
-    axisText:"横向（反向）",
-    description:"基础示范：拍面从球后侧接近，沿球面向前下方切擦，产生与上旋相反的旋转。",
-    contactLocal:new THREE.Vector3(-0.78,0.62,0).normalize(),
-    brush:new THREE.Vector3(0.58,-0.82,0).normalize(),
-    axis:new THREE.Vector3(0,0,1),
-    curveY:0.12,
-    curveZ:0
-  },
-
-  left:{
-    name:"左侧旋",
-    contact:"球的侧后部",
-    brushText:"横向擦过",
-    axisText:"近似竖直",
-    description:"基础示范：球拍从侧后方接近，横向擦过球面，使球主要绕竖直轴旋转。",
-    contactLocal:new THREE.Vector3(-0.75,0,0.66).normalize(),
-    brush:new THREE.Vector3(0.45,0,-0.89).normalize(),
-    axis:new THREE.Vector3(0,1,0),
-    curveY:0,
-    curveZ:-0.28
-  },
-
-  right:{
-    name:"右侧旋",
-    contact:"另一侧后部",
-    brushText:"反向横擦",
-    axisText:"近似竖直（反向）",
-    description:"基础示范：从另一侧横向擦过球面，产生与左侧旋相反的旋转。",
-    contactLocal:new THREE.Vector3(-0.75,0,-0.66).normalize(),
-    brush:new THREE.Vector3(0.45,0,0.89).normalize(),
-    axis:new THREE.Vector3(0,-1,0),
-    curveY:0,
-    curveZ:0.28
-  },
-
-  topSide:{
-    name:"侧上旋",
-    contact:"侧后下部",
-    brushText:"侧上方斜擦",
-    axisText:"倾斜轴",
-    description:"重点观察：球拍既向侧面擦，又向上擦，所以旋转轴是倾斜的，而不是纯横轴或纯竖轴。",
-    contactLocal:new THREE.Vector3(-0.67,-0.47,0.57).normalize(),
-    brush:new THREE.Vector3(0.42,0.64,-0.64).normalize(),
-    axis:new THREE.Vector3(0,0.70,-0.71).normalize(),
-    curveY:-0.14,
-    curveZ:-0.20
-  },
-
-  backSide:{
-    name:"侧下旋",
-    contact:"侧后上部",
-    brushText:"侧下方斜擦",
-    axisText:"反向倾斜轴",
-    description:"重点观察：球拍横向擦球的同时加入向下分量，因此环形旋转箭头的倾斜方向与侧上旋明显不同。",
-    contactLocal:new THREE.Vector3(-0.67,0.47,0.57).normalize(),
-    brush:new THREE.Vector3(0.42,-0.64,-0.64).normalize(),
-    axis:new THREE.Vector3(0,0.70,0.71).normalize(),
-    curveY:0.10,
-    curveZ:-0.20
-  }
-};
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let selected = "top";
-let running = false;
-let paused = false;
-let director = true;
-let slowMode = false;
-let followMode = false;
-let manualView = "ballside";
-
-let targetCam = new THREE.Vector3();
-let targetLook = new THREE.Vector3();
-
-let spinPhase = 0;
-
-/* =========================================================
-   THREE SETUP
-========================================================= */
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x04130e);
-scene.fog = new THREE.Fog(0x04130e,10,24);
-
-const camera = new THREE.PerspectiveCamera(42,1,.04,100);
+const canvas = document.getElementById("scene");
+const stage = document.getElementById("stage");
 
 const renderer = new THREE.WebGLRenderer({
-  antialias:true
+    canvas,
+    antialias:true,
+    alpha:false
 });
 
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
 
-dom.scene.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x07140f);
+scene.fog = new THREE.Fog(0x07140f, 11, 26);
 
-/* =========================================================
-   LIGHTS
-========================================================= */
-
-scene.add(
-  new THREE.HemisphereLight(0xe8fff4,0x03100b,1.8)
+const camera = new THREE.PerspectiveCamera(
+    44,
+    1,
+    0.05,
+    100
 );
 
-const sun = new THREE.DirectionalLight(0xffffff,3.3);
-sun.position.set(-4,8,5);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048,2048);
-scene.add(sun);
+camera.position.set(-4.5, 3.2, 5.7);
 
-const greenLight = new THREE.PointLight(0x49e596,15,10);
-greenLight.position.set(0,4,-3);
-scene.add(greenLight);
+const cameraTarget = new THREE.Vector3(0, 1.8, 0);
+
+scene.add(new THREE.HemisphereLight(0xdffff3, 0x14251e, 1.7));
+
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
+keyLight.position.set(-4, 8, 4);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048,2048);
+scene.add(keyLight);
+
+const rimLight = new THREE.DirectionalLight(0x4affb0, 1.2);
+rimLight.position.set(6,4,-5);
+scene.add(rimLight);
+
 
 /* =========================================================
-   FLOOR + TABLE
+   HELPERS
+========================================================= */
+
+function clamp(v,min,max){
+    return Math.max(min,Math.min(max,v));
+}
+
+function lerp(a,b,t){
+    return a+(b-a)*t;
+}
+
+function smoothstep(t){
+    t=clamp(t,0,1);
+    return t*t*(3-2*t);
+}
+
+function easeInOutCubic(t){
+    return t < .5
+        ? 4*t*t*t
+        : 1-Math.pow(-2*t+2,3)/2;
+}
+
+function vecLerp(a,b,t,target){
+    target.set(
+        lerp(a.x,b.x,t),
+        lerp(a.y,b.y,t),
+        lerp(a.z,b.z,t)
+    );
+}
+
+function resize(){
+    const w = stage.clientWidth;
+    const h = stage.clientHeight;
+
+    renderer.setSize(w,h,false);
+
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+}
+
+window.addEventListener("resize",resize);
+resize();
+
+
+/* =========================================================
+   FLOOR
 ========================================================= */
 
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(30,24),
-  new THREE.MeshStandardMaterial({
-    color:0x06100c,
-    roughness:1
-  })
+    new THREE.PlaneGeometry(30,30),
+    new THREE.MeshStandardMaterial({
+        color:0x06120e,
+        roughness:.92
+    })
 );
 
-floor.rotation.x = -Math.PI/2;
-floor.receiveShadow = true;
+floor.rotation.x=-Math.PI/2;
+floor.position.y=0;
+floor.receiveShadow=true;
 scene.add(floor);
 
-const table = new THREE.Group();
-scene.add(table);
 
-const top = new THREE.Mesh(
-  new THREE.BoxGeometry(5.48,.10,3.05),
-  new THREE.MeshStandardMaterial({
-    color:0x07876e,
-    roughness:.42
-  })
+/* =========================================================
+   TABLE
+========================================================= */
+
+const tableGroup = new THREE.Group();
+scene.add(tableGroup);
+
+const tableTop = new THREE.Mesh(
+    new THREE.BoxGeometry(5.5,.12,3.05),
+    new THREE.MeshStandardMaterial({
+        color:0x079275,
+        roughness:.4,
+        metalness:.02
+    })
 );
 
-top.position.y = 1.50;
-top.receiveShadow = true;
-top.castShadow = true;
-table.add(top);
+tableTop.position.y=1.50;
+tableTop.receiveShadow=true;
+tableTop.castShadow=true;
+tableGroup.add(tableTop);
 
-function tableLine(w,d,x,z){
-  const line = new THREE.Mesh(
-    new THREE.BoxGeometry(w,.012,d),
-    new THREE.MeshBasicMaterial({color:0xffffff})
-  );
-  line.position.set(x,1.557,z);
-  table.add(line);
+const edgeMaterial = new THREE.MeshBasicMaterial({
+    color:0xffffff
+});
+
+function makeLine(x,y,z,sx,sy,sz){
+    const m=new THREE.Mesh(
+        new THREE.BoxGeometry(sx,sy,sz),
+        edgeMaterial
+    );
+    m.position.set(x,y,z);
+    tableGroup.add(m);
 }
 
-tableLine(5.35,.025,0,-1.47);
-tableLine(5.35,.025,0,1.47);
-tableLine(.025,2.95,-2.66,0);
-tableLine(.025,2.95,2.66,0);
+makeLine(0,1.57,-1.48,5.45,.025,.035);
+makeLine(0,1.57, 1.48,5.45,.025,.035);
+makeLine(-2.68,1.57,0,.035,.025,2.95);
+makeLine( 2.68,1.57,0,.035,.025,2.95);
+makeLine(0,1.57,0,5.35,.018,.025);
 
-const legMat = new THREE.MeshStandardMaterial({
-  color:0x30463d,
-  roughness:.85
+const legMaterial=new THREE.MeshStandardMaterial({
+    color:0x263d34,
+    roughness:.8
 });
 
 [
-  [-2.1,.72,-1.1],
-  [-2.1,.72,1.1],
-  [2.1,.72,-1.1],
-  [2.1,.72,1.1]
+    [-2.2,.73,-1.1],
+    [ 2.2,.73,-1.1],
+    [-2.2,.73, 1.1],
+    [ 2.2,.73, 1.1]
 ].forEach(p=>{
-  const leg = new THREE.Mesh(
-    new THREE.BoxGeometry(.11,1.45,.11),
-    legMat
-  );
-  leg.position.set(...p);
-  table.add(leg);
+    const leg=new THREE.Mesh(
+        new THREE.BoxGeometry(.14,1.45,.14),
+        legMaterial
+    );
+    leg.position.set(...p);
+    leg.castShadow=true;
+    tableGroup.add(leg);
 });
+
 
 /* =========================================================
    NET
 ========================================================= */
 
-const net = new THREE.Mesh(
-  new THREE.PlaneGeometry(3.2,.42,18,4),
-  new THREE.MeshBasicMaterial({
-    color:0xffffff,
+const netGroup=new THREE.Group();
+scene.add(netGroup);
+
+const netMaterial=new THREE.MeshBasicMaterial({
+    color:0xb7c7c0,
     wireframe:true,
     transparent:true,
-    opacity:.30,
+    opacity:.52,
     side:THREE.DoubleSide
-  })
+});
+
+const net=new THREE.Mesh(
+    new THREE.PlaneGeometry(3.1,.47,14,4),
+    netMaterial
 );
 
-net.position.set(0,1.78,0);
-net.rotation.y = Math.PI/2;
-scene.add(net);
+net.rotation.y=Math.PI/2;
+net.position.set(0,1.83,0);
+netGroup.add(net);
 
-const netTop = new THREE.Mesh(
-  new THREE.BoxGeometry(.025,.035,3.25),
-  new THREE.MeshBasicMaterial({color:0xffffff})
+const netTop=new THREE.Mesh(
+    new THREE.BoxGeometry(.04,.035,3.15),
+    new THREE.MeshBasicMaterial({color:0xffffff})
 );
 
-netTop.position.set(0,1.99,0);
-scene.add(netTop);
+netTop.position.set(0,2.065,0);
+netGroup.add(netTop);
+
 
 /* =========================================================
    BALL
 ========================================================= */
 
-const ballGroup = new THREE.Group();
+const BALL_RADIUS=.18;
+
+const ballGroup=new THREE.Group();
 scene.add(ballGroup);
 
-const ball = new THREE.Mesh(
-  new THREE.SphereGeometry(BALL_R,64,64),
-  new THREE.MeshStandardMaterial({
-    color:0xf8faf9,
-    roughness:.28
-  })
+const ball=new THREE.Mesh(
+    new THREE.SphereGeometry(BALL_RADIUS,48,32),
+    new THREE.MeshStandardMaterial({
+        color:0xf6f6f0,
+        roughness:.5
+    })
 );
 
-ball.castShadow = true;
+ball.castShadow=true;
 ballGroup.add(ball);
 
-/* Equator */
+/* stripes make rotation visible */
 
-const equator = new THREE.Mesh(
-  new THREE.TorusGeometry(BALL_R+.001,.0055,10,96),
-  new THREE.MeshBasicMaterial({color:0x49e596})
+const stripeMaterial=new THREE.MeshBasicMaterial({
+    color:0x58dcff,
+    transparent:true,
+    opacity:.9
+});
+
+const stripe1=new THREE.Mesh(
+    new THREE.TorusGeometry(
+        BALL_RADIUS*1.005,
+        .012,
+        8,
+        80
+    ),
+    stripeMaterial
 );
 
-ballGroup.add(equator);
+stripe1.rotation.x=Math.PI/2;
+ballGroup.add(stripe1);
 
-/* Meridian */
-
-const meridian = new THREE.Mesh(
-  new THREE.TorusGeometry(BALL_R+.002,.005,10,96),
-  new THREE.MeshBasicMaterial({color:0x54cfff})
+const stripe2=new THREE.Mesh(
+    new THREE.TorusGeometry(
+        BALL_RADIUS*1.008,
+        .009,
+        8,
+        80
+    ),
+    new THREE.MeshBasicMaterial({
+        color:0x51e39a,
+        transparent:true,
+        opacity:.7
+    })
 );
 
-meridian.rotation.y = Math.PI/2;
-ballGroup.add(meridian);
+stripe2.rotation.y=Math.PI/2;
+ballGroup.add(stripe2);
 
-/* asymmetrical surface markers */
-
-const redDot = new THREE.Mesh(
-  new THREE.SphereGeometry(.025,20,20),
-  new THREE.MeshBasicMaterial({color:0xff5964})
-);
-
-redDot.position.set(.052,.108,.045);
-ballGroup.add(redDot);
-
-const yellowDot = new THREE.Mesh(
-  new THREE.SphereGeometry(.017,18,18),
-  new THREE.MeshBasicMaterial({color:0xffd166})
-);
-
-yellowDot.position.set(-.078,-.058,.080);
-ballGroup.add(yellowDot);
 
 /* =========================================================
    PADDLE
-
-   Local face normal = +Z.
 ========================================================= */
 
-function createPaddle(){
+const paddleGroup=new THREE.Group();
+scene.add(paddleGroup);
 
-  const g = new THREE.Group();
+const paddleRadius=.55;
+const paddleThickness=.065;
 
-  const blade = new THREE.Mesh(
+/*
+Paddle local plane = XY
+Paddle normal = local +Z
+*/
+
+const blade=new THREE.Mesh(
     new THREE.CylinderGeometry(
-      PADDLE_R,
-      PADDLE_R,
-      PADDLE_T,
-      64
+        paddleRadius,
+        paddleRadius,
+        paddleThickness,
+        64
     ),
-    [
-      new THREE.MeshStandardMaterial({
-        color:0x4b261f,
-        roughness:.7
-      }),
-      new THREE.MeshStandardMaterial({
-        color:0xe34949,
-        roughness:.45
-      }),
-      new THREE.MeshStandardMaterial({
-        color:0xb51f2c,
-        roughness:.45
-      })
-    ]
-  );
-
-  /*
-    Cylinder's axis starts on Y.
-    Rotate so thickness axis becomes local Z.
-  */
-  blade.rotation.x = Math.PI/2;
-  blade.castShadow = true;
-  g.add(blade);
-
-  const rim = new THREE.Mesh(
-    new THREE.TorusGeometry(PADDLE_R,.018,10,72),
     new THREE.MeshStandardMaterial({
-      color:0x4b291f,
-      roughness:.75
+        color:0xd7423b,
+        roughness:.55
     })
-  );
-
-  g.add(rim);
-
-  const handle = new THREE.Mesh(
-    new THREE.BoxGeometry(.13,.56,.11),
-    new THREE.MeshStandardMaterial({
-      color:0xb98349,
-      roughness:.75
-    })
-  );
-
-  handle.position.y = -.49;
-  handle.castShadow = true;
-  g.add(handle);
-
-  return g;
-}
-
-const paddle = createPaddle();
-scene.add(paddle);
-
-/* =========================================================
-   CONTACT MARKER
-========================================================= */
-
-const contactMarker = new THREE.Mesh(
-  new THREE.SphereGeometry(.032,24,24),
-  new THREE.MeshBasicMaterial({
-    color:0xffd166,
-    transparent:true,
-    opacity:0
-  })
 );
 
-scene.add(contactMarker);
+blade.rotation.x=Math.PI/2;
+blade.castShadow=true;
+paddleGroup.add(blade);
+
+const rubberFront=new THREE.Mesh(
+    new THREE.CircleGeometry(paddleRadius*.96,64),
+    new THREE.MeshStandardMaterial({
+        color:0xd93636,
+        roughness:.68
+    })
+);
+
+rubberFront.position.z=paddleThickness/2+.002;
+paddleGroup.add(rubberFront);
+
+const rim=new THREE.Mesh(
+    new THREE.TorusGeometry(
+        paddleRadius,
+        .038,
+        12,
+        64
+    ),
+    new THREE.MeshStandardMaterial({
+        color:0x4b271d,
+        roughness:.5
+    })
+);
+
+paddleGroup.add(rim);
+
+const handle=new THREE.Mesh(
+    new THREE.BoxGeometry(.20,.78,.12),
+    new THREE.MeshStandardMaterial({
+        color:0xc79250,
+        roughness:.65
+    })
+);
+
+handle.position.y=-.88;
+handle.position.z=-.01;
+handle.rotation.z=.05;
+handle.castShadow=true;
+paddleGroup.add(handle);
+
 
 /* =========================================================
-   BRUSH + AXIS + FLIGHT ARROWS
+   RECEIVER PADDLE
 ========================================================= */
 
-const brushArrow = new THREE.ArrowHelper(
-  new THREE.Vector3(0,1,0),
-  new THREE.Vector3(),
-  .72,
-  0x54cfff,
-  .13,
-  .07
+const receiverPaddle=paddleGroup.clone();
+scene.add(receiverPaddle);
+
+receiverPaddle.position.set(2.35,2.05,0);
+receiverPaddle.rotation.set(0,-Math.PI/2,0);
+receiverPaddle.visible=false;
+
+
+/* =========================================================
+   MOTION TRAIL
+========================================================= */
+
+const trailPoints=[];
+const TRAIL_COUNT=34;
+
+for(let i=0;i<TRAIL_COUNT;i++){
+    trailPoints.push(new THREE.Vector3());
+}
+
+const trailGeometry=new THREE.BufferGeometry().setFromPoints(trailPoints);
+
+const trailLine=new THREE.Line(
+    trailGeometry,
+    new THREE.LineBasicMaterial({
+        color:0x59d8ff,
+        transparent:true,
+        opacity:.8
+    })
+);
+
+scene.add(trailLine);
+
+
+/* =========================================================
+   VELOCITY ARROWS
+========================================================= */
+
+const forwardArrow=new THREE.ArrowHelper(
+    new THREE.Vector3(1,0,0),
+    new THREE.Vector3(),
+    1,
+    0x45e49a,
+    .16,
+    .09
+);
+
+scene.add(forwardArrow);
+
+const brushArrow=new THREE.ArrowHelper(
+    new THREE.Vector3(0,1,0),
+    new THREE.Vector3(),
+    1,
+    0x57d5ff,
+    .16,
+    .09
 );
 
 scene.add(brushArrow);
 
-const axisArrowA = new THREE.ArrowHelper(
-  new THREE.Vector3(0,0,-1),
-  new THREE.Vector3(),
-  .55,
-  0xff5964,
-  .11,
-  .06
-);
-
-const axisArrowB = new THREE.ArrowHelper(
-  new THREE.Vector3(0,0,1),
-  new THREE.Vector3(),
-  .55,
-  0xff5964,
-  .11,
-  .06
-);
-
-scene.add(axisArrowA);
-scene.add(axisArrowB);
-
-const flightArrow = new THREE.ArrowHelper(
-  FLIGHT_DIR,
-  new THREE.Vector3(),
-  .72,
-  0x49e596,
-  .13,
-  .07
-);
-
-scene.add(flightArrow);
 
 /* =========================================================
-   3D SPIN RING
-
-   This is independent of the ball's own rotation.
-
-   The ring lies in the plane perpendicular to the
-   angular velocity axis.
-
-   Moving arrowheads show the actual direction of rotation.
+   SPIN RING / CURVED ARROW
 ========================================================= */
 
-const spinRing = new THREE.Group();
-scene.add(spinRing);
+const spinVisual=new THREE.Group();
+scene.add(spinVisual);
 
-const ringMaterial = new THREE.LineBasicMaterial({
-  color:0xff5964,
-  transparent:true,
-  opacity:.9
-});
-
-const ringCurve = new THREE.EllipseCurve(
-  0,0,
-  .235,.235,
-  0,Math.PI*2,
-  false,
-  0
-);
-
-const ringPoints2D = ringCurve.getPoints(100);
-
-const ringPoints = ringPoints2D.map(
-  p=>new THREE.Vector3(p.x,p.y,0)
-);
-
-const ringGeometry = new THREE.BufferGeometry()
-  .setFromPoints(ringPoints);
-
-const ringLine = new THREE.Line(
-  ringGeometry,
-  ringMaterial
-);
-
-spinRing.add(ringLine);
-
-function createSpinHead(){
-  return new THREE.Mesh(
-    new THREE.ConeGeometry(.034,.095,20),
+const spinRing=new THREE.Mesh(
+    new THREE.TorusGeometry(.29,.011,8,96),
     new THREE.MeshBasicMaterial({
-      color:0xff5964
+        color:0xff6572,
+        transparent:true,
+        opacity:0
     })
-  );
-}
-
-const spinHead1 = createSpinHead();
-const spinHead2 = createSpinHead();
-
-spinRing.add(spinHead1);
-spinRing.add(spinHead2);
-
-/* =========================================================
-   TRAJECTORY
-========================================================= */
-
-let trailPoints = [];
-
-const trailGeo = new THREE.BufferGeometry();
-
-const trail = new THREE.Line(
-  trailGeo,
-  new THREE.LineBasicMaterial({
-    color:0x49e596,
-    transparent:true,
-    opacity:.48
-  })
 );
 
-scene.add(trail);
+spinVisual.add(spinRing);
 
-function clearTrail(){
-  trailPoints = [];
-  trailGeo.setFromPoints([]);
-}
+const cone=new THREE.Mesh(
+    new THREE.ConeGeometry(.055,.16,16),
+    new THREE.MeshBasicMaterial({
+        color:0xff6572,
+        transparent:true,
+        opacity:0
+    })
+);
 
-function addTrail(){
-  trailPoints.push(ballGroup.position.clone());
+cone.position.set(.29,0,0);
+cone.rotation.z=-Math.PI/2;
+spinVisual.add(cone);
 
-  if(trailPoints.length>220){
-    trailPoints.shift();
-  }
-
-  trailGeo.setFromPoints(trailPoints);
-}
-
-/* =========================================================
-   MATH HELPERS
-========================================================= */
-
-function clamp01(t){
-  return Math.max(0,Math.min(1,t));
-}
-
-function smooth(t){
-  t = clamp01(t);
-  return t*t*(3-2*t);
-}
-
-function ease(t){
-  t = clamp01(t);
-  return t<.5
-    ? 2*t*t
-    : 1-Math.pow(-2*t+2,2)/2;
-}
-
-function lerpVector(a,b,t){
-  return a.clone().lerp(b,t);
-}
-
-/*
-  Build a quaternion whose local +Z points toward normal
-  while keeping the racket's local +Y as upright as possible.
-*/
-
-function quaternionFromNormal(normal){
-
-  const n = normal.clone().normalize();
-
-  let up = WORLD_UP.clone();
-
-  if(Math.abs(n.dot(up))>.92){
-    up.set(0,0,1);
-  }
-
-  const right = new THREE.Vector3()
-    .crossVectors(up,n)
-    .normalize();
-
-  const correctedUp = new THREE.Vector3()
-    .crossVectors(n,right)
-    .normalize();
-
-  const matrix = new THREE.Matrix4();
-
-  matrix.makeBasis(
-    right,
-    correctedUp,
-    n
-  );
-
-  return new THREE.Quaternion()
-    .setFromRotationMatrix(matrix);
-}
 
 /* =========================================================
-   CONTACT SYSTEM
-
-   contact point = ball center + normal * radius
-
-   paddle centre is placed OUTSIDE the sphere:
-
-   contactPoint
-   + normal * (half paddle thickness + gap)
-
-   Therefore the racket face never needs to pass
-   through the centre of the ball.
+   CONTACT FLASH
 ========================================================= */
 
-function contactGeometry(){
+const contactFlash=new THREE.Mesh(
+    new THREE.SphereGeometry(.06,20,16),
+    new THREE.MeshBasicMaterial({
+        color:0xffdf76,
+        transparent:true,
+        opacity:0
+    })
+);
 
-  const data = spinData[selected];
+scene.add(contactFlash);
 
-  const normal = data.contactLocal
-    .clone()
-    .normalize();
-
-  const point = ballGroup.position
-    .clone()
-    .addScaledVector(normal,BALL_R);
-
-  const paddleCentre = point
-    .clone()
-    .addScaledVector(
-      normal,
-      PADDLE_T/2 + CONTACT_GAP
-    );
-
-  return {
-    normal,
-    point,
-    paddleCentre,
-    brush:data.brush.clone().normalize()
-  };
-}
 
 /* =========================================================
-   SPIN RING ORIENTATION
+   SPIN DATA
 ========================================================= */
 
-function orientSpinRing(){
+const SPINS={
+    topspin:{
+        name:"上旋",
+        lesson:"球拍先向前接触球，再沿球的后表面向上刷。向前分量产生出球速度，向上摩擦产生上旋。",
+        brush:new THREE.Vector3(0,1,0),
+        spinAxis:new THREE.Vector3(0,0,1),
+        spinSign:-1,
+        sideCurve:0,
+        bounceLift:.18
+    },
 
-  const data = spinData[selected];
+    backspin:{
+        name:"下旋",
+        lesson:"球拍向前接近后沿球的后下方切过。向下的切向摩擦使球产生与上旋相反的旋转。",
+        brush:new THREE.Vector3(0,-1,0),
+        spinAxis:new THREE.Vector3(0,0,1),
+        spinSign:1,
+        sideCurve:0,
+        bounceLift:-.08
+    },
 
-  spinRing.position.copy(ballGroup.position);
+    leftspin:{
+        name:"左侧旋",
+        lesson:"球拍从球的侧后方横向擦过球面。侧向摩擦让球绕竖直轴旋转，并在飞行和反弹后产生侧向偏转。",
+        brush:new THREE.Vector3(0,0,-1),
+        spinAxis:new THREE.Vector3(0,1,0),
+        spinSign:1,
+        sideCurve:-.72,
+        bounceLift:.02
+    },
 
-  /*
-    Default ring normal = local +Z.
-    Rotate +Z onto angular velocity axis.
-  */
+    rightspin:{
+        name:"右侧旋",
+        lesson:"球拍沿与左侧旋相反的方向横向刷球，使球绕竖直轴向另一方向旋转。",
+        brush:new THREE.Vector3(0,0,1),
+        spinAxis:new THREE.Vector3(0,1,0),
+        spinSign:-1,
+        sideCurve:.72,
+        bounceLift:.02
+    },
 
-  const q = new THREE.Quaternion()
-    .setFromUnitVectors(
-      new THREE.Vector3(0,0,1),
-      data.axis.clone().normalize()
-    );
+    sidetop:{
+        name:"侧上旋",
+        lesson:"这不是单独一种轴：球拍同时具有向上和横向的摩擦分量，因此球同时包含上旋与侧旋。",
+        brush:new THREE.Vector3(0,0.72,-.70).normalize(),
+        spinAxis:new THREE.Vector3(0,.70,.72).normalize(),
+        spinSign:-1,
+        sideCurve:-.58,
+        bounceLift:.14
+    },
 
-  spinRing.quaternion.copy(q);
-}
-
-/* =========================================================
-   SPIN RING MOVING ARROWS
-========================================================= */
-
-function updateSpinRing(dt){
-
-  const strength =
-    Number(dom.spinStrength.value)/70;
-
-  spinPhase += dt*2.4*strength;
-
-  const phases = [
-    spinPhase,
-    spinPhase + Math.PI
-  ];
-
-  [spinHead1,spinHead2].forEach((head,index)=>{
-
-    const a = phases[index];
-
-    const r = .235;
-
-    head.position.set(
-      Math.cos(a)*r,
-      Math.sin(a)*r,
-      0
-    );
-
-    /*
-      Tangent direction around local ring.
-    */
-
-    const tangent = new THREE.Vector3(
-      -Math.sin(a),
-      Math.cos(a),
-      0
-    ).normalize();
-
-    /*
-      Cone points along local +Y.
-    */
-
-    head.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0,1,0),
-      tangent
-    );
-  });
-}
-
-/* =========================================================
-   VISUAL HELPERS
-========================================================= */
-
-function updateHelpers(){
-
-  const data = spinData[selected];
-  const cg = contactGeometry();
-
-  contactMarker.position.copy(cg.point);
-
-  brushArrow.position.copy(cg.point);
-  brushArrow.setDirection(cg.brush);
-
-  const axis = data.axis.clone().normalize();
-
-  axisArrowA.position
-    .copy(ballGroup.position)
-    .addScaledVector(axis,-.27);
-
-  axisArrowA.setDirection(axis);
-
-  axisArrowB.position
-    .copy(ballGroup.position)
-    .addScaledVector(axis,.27);
-
-  axisArrowB.setDirection(axis.clone().negate());
-
-  flightArrow.position.copy(
-    ballGroup.position
-      .clone()
-      .add(new THREE.Vector3(0,.32,0))
-  );
-
-  orientSpinRing();
-}
-
-/* =========================================================
-   CAMERA
-
-   Key idea:
-   During contact, camera is NOT placed behind the paddle.
-
-   We construct a viewing direction using:
-   - flight direction
-   - contact normal
-   - world up
-
-   Then test which side keeps the camera away from the
-   paddle's outward normal.
-========================================================= */
-
-const presets = {
-  wide:{
-    pos:new THREE.Vector3(0,4.0,8.5),
-    look:new THREE.Vector3(0,1.55,0),
-    label:"全景"
-  },
-
-  server:{
-    pos:new THREE.Vector3(-7.2,3.6,2.0),
-    look:new THREE.Vector3(0,1.6,0),
-    label:"发球方"
-  },
-
-  top:{
-    pos:new THREE.Vector3(0,9.2,.01),
-    look:new THREE.Vector3(0,1.5,0),
-    label:"俯视"
-  }
+    sideback:{
+        name:"侧下旋",
+        lesson:"球拍同时向下和横向刷球，因此旋转轴是倾斜的。红色旋转环可以帮助观察它与侧上旋的区别。",
+        brush:new THREE.Vector3(0,-.72,-.70).normalize(),
+        spinAxis:new THREE.Vector3(0,.70,-.72).normalize(),
+        spinSign:1,
+        sideCurve:-.58,
+        bounceLift:-.05
+    }
 };
 
-function setPreset(name,instant=false){
 
-  followMode = false;
-  manualView = name;
+/* =========================================================
+   STATE
+========================================================= */
 
-  document.querySelectorAll(".viewBtn").forEach(btn=>{
-    btn.classList.toggle(
-      "active",
-      btn.dataset.view===name
-    );
-  });
+let selectedSpin="topspin";
+let running=false;
+let paused=false;
+let slowMotion=false;
+let autoCamera=true;
 
-  if(name==="ballside" || name==="contact"){
-    setContactCamera(name==="contact" ? 1.05 : 1.75);
-    return;
-  }
+let elapsed=0;
+let lastTime=performance.now();
 
-  if(name==="follow"){
-    followMode = true;
-    dom.cameraLabel.textContent="镜头：🎥 跟球";
-    return;
-  }
+let ballSpin=0;
+let ballSpeed=0;
+let forwardSpeed=0;
+let brushSpeed=0;
 
-  const p = presets[name];
+let currentStep=0;
 
-  if(!p)return;
+const BALL_START=new THREE.Vector3(-2.05,2.12,0);
 
-  targetCam.copy(p.pos);
-  targetLook.copy(p.look);
+const paddlePosition=new THREE.Vector3();
+const tempVector=new THREE.Vector3();
+const tempVector2=new THREE.Vector3();
 
-  dom.cameraLabel.textContent="镜头："+p.label;
+const cameraGoal=new THREE.Vector3();
+const targetGoal=new THREE.Vector3();
 
-  if(instant){
-    camera.position.copy(targetCam);
-    camera.lookAt(targetLook);
-  }
-}
+const contactNormal=new THREE.Vector3(1,0,0);
 
-/*
-  Ball-first camera:
-  camera sits to the side of the contact plane.
+const PADDLE_FACE_GAP=
+    paddleThickness/2 +
+    BALL_RADIUS +
+    .012;
 
-  It always looks directly at the ball/contact region.
-*/
-
-function setContactCamera(distance=1.15){
-
-  followMode = false;
-
-  const cg = contactGeometry();
-
-  const side = new THREE.Vector3()
-    .crossVectors(
-      WORLD_UP,
-      FLIGHT_DIR
-    )
-    .normalize();
-
-  /*
-    If the selected contact point lies on the same side
-    as the camera, flip the camera to the opposite side.
-
-    This prevents the racket from sitting between
-    camera and ball.
-  */
-
-  if(side.dot(cg.normal)>0){
-    side.negate();
-  }
-
-  const cameraDirection = side
-    .multiplyScalar(.78)
-    .add(new THREE.Vector3(-.22,.42,0))
-    .normalize();
-
-  targetCam
-    .copy(ballGroup.position)
-    .addScaledVector(
-      cameraDirection,
-      distance
-    );
-
-  targetLook
-    .copy(ballGroup.position)
-    .addScaledVector(cg.normal,.025);
-
-  dom.cameraLabel.textContent =
-    distance<1.3
-      ? "镜头：🔬 球旁触球特写"
-      : "镜头：球旁观察";
-}
-
-function updateCamera(){
-
-  if(followMode){
-
-    const desired = ballGroup.position
-      .clone()
-      .add(new THREE.Vector3(-.85,.50,1.08));
-
-    camera.position.lerp(desired,.075);
-
-    camera.lookAt(ballGroup.position);
-
-    return;
-  }
-
-  camera.position.lerp(targetCam,.08);
-
-  camera.lookAt(targetLook);
-}
 
 /* =========================================================
    UI
 ========================================================= */
 
-function updateUI(){
+const lessonTitle=document.getElementById("lessonTitle");
+const lessonText=document.getElementById("lessonText");
 
-  const d = spinData[selected];
+const stepNumber=document.getElementById("stepNumber");
+const stepTitle=document.getElementById("stepTitle");
+const stepDesc=document.getElementById("stepDesc");
 
-  dom.spinValue.textContent =
-    dom.spinStrength.value+"%";
+const forwardValue=document.getElementById("forwardValue");
+const brushValue=document.getElementById("brushValue");
+const ballSpeedValue=document.getElementById("ballSpeedValue");
+const spinValue=document.getElementById("spinValue");
 
-  dom.spinName.textContent=d.name;
+const infoTitle=document.getElementById("infoTitle");
+const infoText=document.getElementById("infoText");
 
-  dom.description.textContent=d.description;
+const contactBadge=document.getElementById("contactBadge");
 
-  dom.contactText.textContent=d.contact;
+const strengthInput=document.getElementById("strength");
+const strengthLabel=document.getElementById("strengthLabel");
 
-  dom.brushText.textContent=d.brushText;
+const runBtn=document.getElementById("runBtn");
+const slowBtn=document.getElementById("slowBtn");
+const pauseBtn=document.getElementById("pauseBtn");
+const resetBtn=document.getElementById("resetBtn");
+const autoCameraSwitch=document.getElementById("autoCamera");
 
-  dom.axisText.textContent=d.axisText;
-
-  dom.lessonTitle.textContent=
-    "🏓 "+d.name+" · 基础擦球示范";
-
-  dom.lessonText.textContent=d.description;
-
-  updateHelpers();
-
-  if(!running){
-    setPreset(manualView);
-  }
-}
-
-document.querySelectorAll(".spinBtn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    if(running)return;
-
-    document.querySelectorAll(".spinBtn").forEach(b=>{
-      b.classList.remove("active");
-    });
-
-    btn.classList.add("active");
-
-    selected=btn.dataset.spin;
-
-    resetScene();
-    updateUI();
-  });
-});
-
-document.querySelectorAll(".viewBtn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    setPreset(btn.dataset.view);
-  });
-});
-
-dom.spinStrength.addEventListener("input",updateUI);
-
-dom.director.addEventListener("click",()=>{
-  director=!director;
-  dom.director.classList.toggle("on",director);
-});
-
-dom.slow.addEventListener("click",()=>{
-  slowMode=!slowMode;
-
-  dom.slow.textContent=
-    slowMode
-      ? "✓ 全程 0.35×"
-      : "🐢 全程慢放";
-});
-
-dom.pause.addEventListener("click",()=>{
-  if(!running)return;
-
-  paused=!paused;
-
-  dom.pause.textContent=
-    paused
-      ? "▶ 继续"
-      : "⏸ 暂停";
-});
-
-dom.reset.addEventListener("click",resetScene);
-dom.run.addEventListener("click",runServe);
 
 /* =========================================================
-   TWEEN
+   CAMERA PRESETS
 ========================================================= */
 
-function tween(duration,fn,contactSlow=false){
+const views={
+    contact:{
+        pos:new THREE.Vector3(-3.35,2.75,3.45),
+        target:new THREE.Vector3(-1.82,2.05,0)
+    },
 
-  return new Promise(resolve=>{
+    wide:{
+        pos:new THREE.Vector3(-6.8,5.1,6.7),
+        target:new THREE.Vector3(0,1.65,0)
+    },
 
-    let start=null;
-    let pauseStart=null;
-    let pausedTime=0;
+    server:{
+        pos:new THREE.Vector3(-6.2,3.1,0),
+        target:new THREE.Vector3(0,1.7,0)
+    },
 
-    let multiplier=1;
+    top:{
+        pos:new THREE.Vector3(0,8.5,.01),
+        target:new THREE.Vector3(0,1.3,0)
+    },
 
-    if(slowMode)multiplier*=2.85;
-    if(contactSlow)multiplier*=3.5;
+    follow:{
+        pos:new THREE.Vector3(-1.5,2.7,3.5),
+        target:new THREE.Vector3(0,2,0)
+    },
 
-    const total=duration*multiplier;
+    receiver:{
+        pos:new THREE.Vector3(6.0,3.2,0),
+        target:new THREE.Vector3(0,1.7,0)
+    }
+};
 
-    function frame(now){
+let manualView="contact";
 
-      if(start===null)start=now;
 
-      if(paused){
+/* =========================================================
+   PADDLE ORIENTATION
+========================================================= */
 
-        if(pauseStart===null){
-          pauseStart=now;
-        }
+function orientPaddle(normal){
+    /*
+    Paddle local +Z must point toward normal.
+    */
+    const zAxis=new THREE.Vector3(0,0,1);
 
-        requestAnimationFrame(frame);
-        return;
-      }
+    paddleGroup.quaternion.setFromUnitVectors(
+        zAxis,
+        normal.clone().normalize()
+    );
+}
 
-      if(pauseStart!==null){
-        pausedTime+=now-pauseStart;
-        pauseStart=null;
-      }
 
-      const t=Math.min(
-        (now-start-pausedTime)/total,
-        1
-      );
+/* =========================================================
+   COLLISION CONSTRAINT
+========================================================= */
 
-      fn(t);
+function enforceNoPenetration(){
+    /*
+    Treat paddle face as finite circular plane.
 
-      if(t<1){
-        requestAnimationFrame(frame);
-      }else{
-        resolve();
-      }
+    1. transform ball center into paddle local coordinates
+    2. check whether projected point lies inside paddle disc
+    3. keep ball outside front rubber plane
+    */
+
+    paddleGroup.updateMatrixWorld(true);
+
+    const localBall=paddleGroup.worldToLocal(
+        ballGroup.position.clone()
+    );
+
+    const radialDistance=Math.sqrt(
+        localBall.x*localBall.x +
+        localBall.y*localBall.y
+    );
+
+    const maxContactRadius=paddleRadius + BALL_RADIUS*.35;
+
+    if(radialDistance > maxContactRadius){
+        return false;
     }
 
-    requestAnimationFrame(frame);
-  });
+    const minimumZ=PADDLE_FACE_GAP;
+
+    if(localBall.z < minimumZ && localBall.z > -.25){
+        localBall.z=minimumZ;
+
+        const corrected=paddleGroup.localToWorld(localBall);
+        ballGroup.position.copy(corrected);
+
+        return true;
+    }
+
+    return false;
 }
+
 
 /* =========================================================
-   BALL SPIN
+   TRAIL
 ========================================================= */
 
-function rotateBall(amount){
+function clearTrail(){
+    for(let i=0;i<TRAIL_COUNT;i++){
+        trailPoints[i].copy(paddleGroup.position);
+    }
 
-  const d=spinData[selected];
-
-  const strength=
-    Number(dom.spinStrength.value)/70;
-
-  ballGroup.rotateOnWorldAxis(
-    d.axis,
-    amount*strength
-  );
+    trailGeometry.setFromPoints(trailPoints);
 }
+
+function updateTrail(){
+    for(let i=0;i<TRAIL_COUNT-1;i++){
+        trailPoints[i].copy(trailPoints[i+1]);
+    }
+
+    trailPoints[TRAIL_COUNT-1].copy(paddleGroup.position);
+    trailGeometry.setFromPoints(trailPoints);
+}
+
+
+/* =========================================================
+   SPIN VISUAL
+========================================================= */
+
+function updateSpinVisual(dt){
+    const data=SPINS[selectedSpin];
+
+    spinVisual.position.copy(ballGroup.position);
+
+    spinVisual.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0,0,1),
+        data.spinAxis.clone().normalize()
+    );
+
+    const visible=clamp(ballSpin/2500,0,1);
+
+    spinRing.material.opacity=.15+.8*visible;
+    cone.material.opacity=.15+.85*visible;
+
+    const speed=
+        data.spinSign *
+        ballSpin *
+        .000035;
+
+    spinVisual.rotation.z += speed*dt;
+
+    ballGroup.rotateOnWorldAxis(
+        data.spinAxis,
+        data.spinSign * ballSpin * .0000105 * dt
+    );
+}
+
+
+/* =========================================================
+   STEP UI
+========================================================= */
+
+const steps=[
+    {
+        title:"准备",
+        desc:"球保持静止。观察球拍从哪里接近球。"
+    },
+    {
+        title:"接近",
+        desc:"球拍正在接近，但还没有接触。此时球的旋转仍然是 0。"
+    },
+    {
+        title:"向前接触",
+        desc:"胶皮第一次真正碰到球。球拍的法向/向前分量开始给球线速度。"
+    },
+    {
+        title:"切向摩擦",
+        desc:"球拍继续运动，并沿球面刷过。蓝色方向产生摩擦，球现在才明显开始旋转。"
+    },
+    {
+        title:"分离与飞行",
+        desc:"球已经离开胶皮。之后的飞行由它获得的线速度与旋转共同决定。"
+    }
+];
+
+function setStep(index){
+    if(index===currentStep) return;
+
+    currentStep=index;
+
+    const s=steps[index];
+
+    stepNumber.textContent=`STEP ${index+1} / 5`;
+    stepTitle.textContent=s.title;
+    stepDesc.textContent=s.desc;
+}
+
+function updateMeters(){
+    forwardValue.textContent=
+        `${forwardSpeed.toFixed(1)} m/s`;
+
+    brushValue.textContent=
+        `${brushSpeed.toFixed(1)} m/s`;
+
+    ballSpeedValue.textContent=
+        `${ballSpeed.toFixed(1)} m/s`;
+
+    spinValue.textContent=
+        `${Math.round(ballSpin)} rpm`;
+}
+
 
 /* =========================================================
    RESET
 ========================================================= */
 
-function resetScene(){
+function resetSimulation(){
+    running=false;
+    paused=false;
+    elapsed=0;
 
-  running=false;
-  paused=false;
-  followMode=false;
+    ballSpin=0;
+    ballSpeed=0;
+    forwardSpeed=0;
+    brushSpeed=0;
 
-  dom.run.disabled=false;
-  dom.run.textContent="▶ 运行发球";
-  dom.pause.textContent="⏸ 暂停";
-  dom.status.textContent="准备发球";
+    currentStep=-1;
 
-  ballGroup.position.set(-2.15,2.22,0);
-  ballGroup.quaternion.identity();
+    ballGroup.position.copy(BALL_START);
+    ballGroup.rotation.set(0,0,0);
 
-  paddle.position.set(-2.85,1.85,.5);
-  paddle.quaternion.identity();
+    spinRing.material.opacity=0;
+    cone.material.opacity=0;
 
-  contactMarker.material.opacity=0;
+    contactFlash.material.opacity=0;
 
-  clearTrail();
+    receiverPaddle.visible=false;
 
-  updateHelpers();
+    contactBadge.classList.remove("touch");
+    contactBadge.textContent="● 尚未接触";
 
-  setPreset(
-    manualView==="follow"
-      ? "ballside"
-      : manualView,
-    true
-  );
+    const data=SPINS[selectedSpin];
+
+    const startOffset=new THREE.Vector3(
+        -.95,
+        -data.brush.y*.25,
+        -data.brush.z*.25
+    );
+
+    paddleGroup.position.copy(BALL_START).add(startOffset);
+
+    orientPaddle(new THREE.Vector3(1,0,0));
+
+    forwardArrow.visible=false;
+    brushArrow.visible=false;
+
+    clearTrail();
+
+    setStep(0);
+    updateMeters();
+
+    runBtn.textContent="▶ 运行发球";
+    pauseBtn.textContent="Ⅱ 暂停";
+
+    applyCameraInstant(manualView);
 }
 
+
 /* =========================================================
-   PADDLE PLACEMENT
-
-   Every animation frame recomputes the safe surface
-   position from the sphere.
-
-   This is the important V3 difference:
-   we do NOT animate the paddle through the ball.
+   CAMERA
 ========================================================= */
 
-function placePaddleAtContact(offsetAlongBrush=0,extraNormal=0){
+function applyCameraInstant(viewName){
+    const v=views[viewName] || views.contact;
 
-  const cg=contactGeometry();
-
-  const safeCentre = cg.paddleCentre
-    .clone()
-    .addScaledVector(
-      cg.brush,
-      offsetAlongBrush
-    )
-    .addScaledVector(
-      cg.normal,
-      extraNormal
-    );
-
-  paddle.position.copy(safeCentre);
-
-  /*
-    Paddle's face should point toward the ball.
-
-    local +Z points outward from paddle.
-    We align it with -contactNormal.
-  */
-
-  paddle.quaternion.copy(
-    quaternionFromNormal(
-      cg.normal.clone().negate()
-    )
-  );
+    camera.position.copy(v.pos);
+    cameraTarget.copy(v.target);
+    camera.lookAt(cameraTarget);
 }
 
-/* =========================================================
-   SERVE ANIMATION
-========================================================= */
+function updateCamera(dt){
+    let desiredPos;
+    let desiredTarget;
 
-async function runServe(){
+    if(autoCamera && running){
 
-  if(running)return;
+        /*
+        Contact camera deliberately stays farther away than V3.
+        */
 
-  resetScene();
+        if(elapsed<5.4){
+            desiredPos=new THREE.Vector3(
+                -3.35,
+                2.75,
+                3.45
+            );
 
-  running=true;
+            desiredTarget=ballGroup.position.clone()
+                .add(new THREE.Vector3(-.08,0,0));
+        }
+        else if(elapsed<7.5){
+            desiredPos=ballGroup.position.clone()
+                .add(new THREE.Vector3(-2.5,1.15,3.25));
 
-  dom.run.disabled=true;
-  dom.run.textContent="运行中…";
+            desiredTarget=ballGroup.position.clone();
+        }
+        else{
+            desiredPos=new THREE.Vector3(
+                -5.5,
+                4.1,
+                5.5
+            );
 
-  const d=spinData[selected];
+            desiredTarget=new THREE.Vector3(
+                .7,
+                1.7,
+                0
+            );
+        }
 
-  const cg=contactGeometry();
+    }else{
 
-  /* ------------------------------
-     STAGE 1 — WIDE
-  ------------------------------ */
+        const v=views[manualView];
 
-  dom.status.textContent="① 准备发球";
+        if(manualView==="follow"){
+            desiredPos=ballGroup.position.clone()
+                .add(new THREE.Vector3(-2.0,.9,3.0));
 
-  dom.lessonTitle.textContent=
-    d.name+" · 先观察接触区域";
-
-  dom.lessonText.textContent=
-    "黄色点表示这次示范的接触区域。球拍还没有碰到球。";
-
-  if(director){
-    setPreset("wide");
-  }
-
-  const approachDistance=.60;
-
-  const approachStart = cg.paddleCentre
-    .clone()
-    .addScaledVector(cg.normal,.46)
-    .addScaledVector(cg.brush,-approachDistance);
-
-  const approachEnd = cg.paddleCentre
-    .clone()
-    .addScaledVector(cg.normal,.12)
-    .addScaledVector(cg.brush,-.20);
-
-  paddle.position.copy(approachStart);
-
-  paddle.quaternion.copy(
-    quaternionFromNormal(
-      cg.normal.clone().negate()
-    )
-  );
-
-  await tween(650,t=>{
-
-    paddle.position.copy(
-      lerpVector(
-        approachStart,
-        approachEnd,
-        ease(t)
-      )
-    );
-  });
-
-  /* ------------------------------
-     STAGE 2 — CAMERA MOVES BESIDE BALL
-  ------------------------------ */
-
-  dom.status.textContent="② 镜头靠近球";
-
-  dom.lessonTitle.textContent=
-    "🔬 镜头始终优先看球";
-
-  dom.lessonText.textContent=
-    "镜头移动到球的侧面，让球拍留在画面边缘，而不是挡在球前面。";
-
-  if(director){
-    setContactCamera(1.12);
-  }
-
-  await tween(650,()=>{});
-
-  /* ------------------------------
-     STAGE 3 — FINAL APPROACH
-  ------------------------------ */
-
-  dom.status.textContent="③ 球拍接近球面";
-
-  contactMarker.material.opacity=1;
-
-  /*
-    Start safely outside the sphere.
-  */
-
-  const finalStart = cg.paddleCentre
-    .clone()
-    .addScaledVector(cg.normal,.14)
-    .addScaledVector(cg.brush,-.18);
-
-  const finalEnd = cg.paddleCentre
-    .clone()
-    .addScaledVector(cg.brush,-.18);
-
-  await tween(500,t=>{
-
-    paddle.position.copy(
-      lerpVector(
-        finalStart,
-        finalEnd,
-        smooth(t)
-      )
-    );
-
-  },true);
-
-  /* ------------------------------
-     STAGE 4 — BRUSH CONTACT
-
-     IMPORTANT:
-     paddle remains on the safe tangent surface.
-     It slides ALONG the brush direction.
-  ------------------------------ */
-
-  dom.status.textContent="④ 超慢动作：擦球";
-
-  dom.lessonTitle.textContent=
-    d.name+" · 看蓝色擦球方向";
-
-  dom.lessonText.textContent=
-    "球拍沿球面外侧擦过。红色环形箭头显示球随后获得的旋转方向。";
-
-  const brushStart=-.18;
-  const brushEnd=.34;
-
-  await tween(650,t=>{
-
-    const travel=THREE.MathUtils.lerp(
-      brushStart,
-      brushEnd,
-      smooth(t)
-    );
-
-    placePaddleAtContact(
-      travel,
-      0
-    );
-
-    /*
-      Spin begins only around the central contact portion.
-    */
-
-    if(t>.22 && t<.82){
-      rotateBall(.035);
+            desiredTarget=ballGroup.position.clone();
+        }else{
+            desiredPos=v.pos.clone();
+            desiredTarget=v.target.clone();
+        }
     }
 
-    updateHelpers();
+    cameraGoal.copy(desiredPos);
+    targetGoal.copy(desiredTarget);
 
-  },true);
+    const smoothing=1-Math.pow(.001,dt);
 
-  /* ------------------------------
-     STAGE 5 — HOLD SPIN CLOSE-UP
-  ------------------------------ */
+    camera.position.lerp(cameraGoal,smoothing);
+    cameraTarget.lerp(targetGoal,smoothing);
 
-  dom.status.textContent="⑤ 球已经获得旋转";
-
-  dom.lessonTitle.textContent=
-    "⟳ "+d.name+" · 看环形箭头";
-
-  dom.lessonText.textContent=
-    selected==="topSide" || selected==="backSide"
-      ? "注意环形箭头所在的平面是倾斜的。侧上旋和侧下旋的倾斜方向不同。"
-      : "环形箭头围绕实际旋转轴运动，比单独观察球面纹理更容易判断旋转方向。";
-
-  /*
-    Paddle retreats away from sphere.
-  */
-
-  const retreatStart=paddle.position.clone();
-
-  const retreatEnd=retreatStart
-    .clone()
-    .addScaledVector(cg.normal,.42)
-    .addScaledVector(cg.brush,.18);
-
-  await tween(700,t=>{
-
-    paddle.position.copy(
-      lerpVector(
-        retreatStart,
-        retreatEnd,
-        ease(t)
-      )
-    );
-
-    rotateBall(.055);
-
-  },true);
-
-  contactMarker.material.opacity=.25;
-
-  /* ------------------------------
-     STAGE 6 — BALL FLIGHT
-  ------------------------------ */
-
-  dom.status.textContent="⑥ 球离拍";
-
-  dom.lessonTitle.textContent="🎥 跟球观察";
-
-  dom.lessonText.textContent=
-    "镜头跟随球心，但不会跟着球一起旋转。继续观察红色环形箭头和球面标记。";
-
-  if(director){
-    followMode=true;
-    dom.cameraLabel.textContent="镜头：🎥 跟球";
-  }
-
-  const start=ballGroup.position.clone();
-
-  const bounce=new THREE.Vector3(
-    1.28,
-    1.69,
-    d.curveZ
-  );
-
-  await tween(1450,t=>{
-
-    const x=THREE.MathUtils.lerp(
-      start.x,
-      bounce.x,
-      t
-    );
-
-    const z=THREE.MathUtils.lerp(
-      start.z,
-      bounce.z,
-      t
-    );
-
-    let y=THREE.MathUtils.lerp(
-      start.y,
-      bounce.y,
-      t
-    );
-
-    y+=Math.sin(Math.PI*t)*.70;
-
-    y+=d.curveY*t*t;
-
-    ballGroup.position.set(x,y,z);
-
-    rotateBall(.105);
-
-    addTrail();
-    updateHelpers();
-  });
-
-  /* ------------------------------
-     STAGE 7 — BOUNCE
-  ------------------------------ */
-
-  dom.status.textContent="⑦ 落台";
-
-  dom.lessonTitle.textContent="落台后旋转仍然存在";
-
-  dom.lessonText.textContent=
-    "桌面摩擦会改变反弹后的线速度，但球不会在碰台的一瞬间停止旋转。";
-
-  followMode=false;
-
-  if(director){
-
-    targetCam.copy(
-      ballGroup.position.clone()
-        .add(new THREE.Vector3(-.75,.55,1.0))
-    );
-
-    targetLook.copy(ballGroup.position);
-
-    dom.cameraLabel.textContent="镜头：落台特写";
-  }
-
-  await tween(300,t=>{
-
-    const s=Math.sin(Math.PI*t);
-
-    ball.scale.set(
-      1+.05*s,
-      1-.10*s,
-      1+.05*s
-    );
-
-    rotateBall(.04);
-
-  },true);
-
-  ball.scale.set(1,1,1);
-
-  /* ------------------------------
-     STAGE 8 — POST BOUNCE
-  ------------------------------ */
-
-  dom.status.textContent="⑧ 反弹后继续飞行";
-
-  if(director){
-    followMode=true;
-    dom.cameraLabel.textContent="镜头：🎥 跟球";
-  }
-
-  const postStart=ballGroup.position.clone();
-
-  const postEnd=new THREE.Vector3(
-    3.05,
-    2.10 + (d.curveY<0 ? -.05 : .10),
-    d.curveZ*1.8
-  );
-
-  await tween(900,t=>{
-
-    const p=lerpVector(
-      postStart,
-      postEnd,
-      t
-    );
-
-    p.y+=Math.sin(Math.PI*t)*.52;
-
-    ballGroup.position.copy(p);
-
-    rotateBall(.11);
-
-    addTrail();
-    updateHelpers();
-  });
-
-  /* ------------------------------
-     FINISH
-  ------------------------------ */
-
-  followMode=false;
-
-  dom.status.textContent=
-    "✓ "+d.name+"演示完成";
-
-  dom.lessonTitle.textContent=
-    "比较下一种旋转";
-
-  dom.lessonText.textContent=
-    "建议现在直接切换到另一种旋转，再比较接触区域、蓝色擦球方向和红色环形箭头。";
-
-  if(director){
-    setPreset("ballside");
-  }
-
-  running=false;
-
-  dom.run.disabled=false;
-  dom.run.textContent="▶ 再运行一次";
+    camera.lookAt(cameraTarget);
 }
+
 
 /* =========================================================
-   RESIZE
+   SIMULATION PHASES
 ========================================================= */
 
-function resize(){
+/*
+Timeline at normal speed:
 
-  const w=dom.scene.clientWidth;
-  const h=dom.scene.clientHeight;
+0.0 - 1.0   preparation
+1.0 - 2.6   approach
+2.6 - 3.4   first contact / forward impulse
+3.4 - 4.8   brush
+4.8 - 5.3   separation
+5.3+        flight
+*/
 
-  renderer.setSize(w,h,false);
+function simulateContactPhase(t,dt){
+    const data=SPINS[selectedSpin];
+    const strength=Number(strengthInput.value)/100;
 
-  camera.aspect=w/h;
-  camera.updateProjectionMatrix();
+    const contactPoint=BALL_START.clone().add(
+        new THREE.Vector3(-PADDLE_FACE_GAP,0,0)
+    );
+
+    const approachStart=BALL_START.clone().add(
+        new THREE.Vector3(
+            -1.10,
+            -data.brush.y*.30,
+            -data.brush.z*.30
+        )
+    );
+
+    /* -----------------------------------------
+       STEP 1 - preparation
+    ----------------------------------------- */
+
+    if(t<1.0){
+        setStep(0);
+
+        const p=smoothstep(t/1.0);
+
+        paddlePosition.copy(approachStart);
+
+        paddlePosition.y +=
+            Math.sin(p*Math.PI)*.04;
+
+        paddleGroup.position.copy(paddlePosition);
+
+        ballGroup.position.copy(BALL_START);
+
+        ballSpin=0;
+        ballSpeed=0;
+        forwardSpeed=0;
+        brushSpeed=0;
+
+        contactBadge.classList.remove("touch");
+        contactBadge.textContent="● 尚未接触";
+
+        forwardArrow.visible=false;
+        brushArrow.visible=false;
+
+        return;
+    }
+
+    /* -----------------------------------------
+       STEP 2 - approach
+    ----------------------------------------- */
+
+    if(t<2.6){
+        setStep(1);
+
+        const p=smoothstep(
+            (t-1.0)/1.6
+        );
+
+        vecLerp(
+            approachStart,
+            contactPoint,
+            p,
+            paddlePosition
+        );
+
+        /*
+        During approach add a little of the future brush path,
+        but never let the face enter the ball.
+        */
+
+        const earlyBrush=
+            data.brush.clone()
+            .multiplyScalar(.10*p);
+
+        paddlePosition.add(earlyBrush);
+
+        paddleGroup.position.copy(paddlePosition);
+
+        ballGroup.position.copy(BALL_START);
+
+        ballSpin=0;
+        ballSpeed=0;
+
+        forwardSpeed=lerp(1.0,3.4,p);
+        brushSpeed=lerp(.2,.8,p);
+
+        forwardArrow.visible=true;
+        brushArrow.visible=true;
+
+        updateMotionArrows(
+            forwardSpeed,
+            brushSpeed*.35
+        );
+
+        contactBadge.classList.remove("touch");
+        contactBadge.textContent="● 尚未接触";
+
+        enforceNoPenetration();
+
+        return;
+    }
+
+    /* -----------------------------------------
+       STEP 3 - FIRST CONTACT
+    ----------------------------------------- */
+
+    if(t<3.4){
+        setStep(2);
+
+        const p=smoothstep(
+            (t-2.6)/.8
+        );
+
+        /*
+        Paddle stays outside ball.
+        It advances only a tiny physically safe amount.
+        Ball starts moving with it after actual contact.
+        */
+
+        const forwardTravel=.24*p;
+
+        paddleGroup.position.copy(contactPoint);
+        paddleGroup.position.x += forwardTravel;
+
+        /*
+        Ball is pushed forward enough to preserve separation.
+        */
+
+        ballGroup.position.copy(BALL_START);
+        ballGroup.position.x += forwardTravel;
+
+        enforceNoPenetration();
+
+        forwardSpeed=lerp(3.4,5.2,p);
+        brushSpeed=lerp(.8,1.6,p);
+
+        ballSpeed=lerp(0,3.4,p);
+
+        /*
+        Tiny initial spin only after contact.
+        */
+        ballSpin=lerp(0,260*strength,p);
+
+        contactBadge.classList.add("touch");
+        contactBadge.textContent="● CONTACT · 第一次接触";
+
+        contactFlash.position.copy(
+            BALL_START.clone().add(
+                new THREE.Vector3(-BALL_RADIUS,0,0)
+            )
+        );
+
+        contactFlash.material.opacity=
+            .75*(1-p)+.18;
+
+        updateMotionArrows(
+            forwardSpeed,
+            brushSpeed
+        );
+
+        return;
+    }
+
+    /* -----------------------------------------
+       STEP 4 - BRUSH
+    ----------------------------------------- */
+
+    if(t<4.8){
+        setStep(3);
+
+        const p=smoothstep(
+            (t-3.4)/1.4
+        );
+
+        const baseForward=.24+.34*p;
+
+        /*
+        Ball is now accelerating away.
+        */
+        ballGroup.position.copy(BALL_START);
+        ballGroup.position.x +=
+            .24 +
+            .40*p;
+
+        /*
+        Paddle moves forward less than ball
+        while strongly moving along tangent.
+        This prevents it from tunneling through the sphere.
+        */
+
+        paddleGroup.position.copy(contactPoint);
+
+        paddleGroup.position.x +=
+            .24 +
+            .16*p;
+
+        const brushDistance=
+            .54*p*strength;
+
+        paddleGroup.position.add(
+            data.brush.clone()
+            .multiplyScalar(brushDistance)
+        );
+
+        enforceNoPenetration();
+
+        forwardSpeed=lerp(5.2,4.1,p);
+        brushSpeed=lerp(1.6,5.0*strength,p);
+
+        ballSpeed=lerp(
+            3.4,
+            5.8,
+            p
+        );
+
+        ballSpin=lerp(
+            260*strength,
+            3100*strength,
+            p
+        );
+
+        contactBadge.classList.add("touch");
+
+        if(p<.72){
+            contactBadge.textContent=
+                "● CONTACT · 正在摩擦";
+        }else{
+            contactBadge.textContent=
+                "● 即将分离";
+        }
+
+        contactFlash.material.opacity=
+            .30*(1-p);
+
+        updateMotionArrows(
+            forwardSpeed,
+            brushSpeed
+        );
+
+        return;
+    }
+
+    /* -----------------------------------------
+       STEP 5 - SEPARATION
+    ----------------------------------------- */
+
+    if(t<5.3){
+        setStep(4);
+
+        const p=smoothstep(
+            (t-4.8)/.5
+        );
+
+        ballGroup.position.copy(BALL_START);
+
+        ballGroup.position.x=
+            BALL_START.x +
+            .64 +
+            .55*p;
+
+        ballGroup.position.y +=
+            .05*p;
+
+        ballGroup.position.z +=
+            data.sideCurve*.05*p;
+
+        paddleGroup.position.copy(contactPoint);
+
+        paddleGroup.position.x+=.40;
+
+        paddleGroup.position.add(
+            data.brush.clone()
+            .multiplyScalar(.54+.22*p)
+        );
+
+        ballSpeed=5.8;
+        ballSpin=3100*strength;
+
+        forwardSpeed=lerp(4.1,2.0,p);
+        brushSpeed=lerp(
+            5.0*strength,
+            2.0,
+            p
+        );
+
+        contactBadge.classList.remove("touch");
+        contactBadge.textContent="● 已分离";
+
+        contactFlash.material.opacity=0;
+
+        updateMotionArrows(
+            forwardSpeed,
+            brushSpeed
+        );
+
+        return;
+    }
+
+    simulateFlight(t-5.3,dt);
 }
 
-window.addEventListener("resize",resize);
 
 /* =========================================================
-   RENDER
+   FLIGHT
 ========================================================= */
 
-let previousTime=performance.now();
+function simulateFlight(t,dt){
+    const data=SPINS[selectedSpin];
+    const strength=Number(strengthInput.value)/100;
 
-function render(now){
+    setStep(4);
 
-  requestAnimationFrame(render);
+    forwardArrow.visible=false;
+    brushArrow.visible=false;
 
-  const dt=Math.min(
-    (now-previousTime)/1000,
-    .05
-  );
+    contactBadge.classList.remove("touch");
+    contactBadge.textContent="● 飞行中";
 
-  previousTime=now;
+    const startX=
+        BALL_START.x+1.19;
 
-  updateCamera();
+    /*
+    Segment 1:
+    server -> first bounce
+    */
 
-  /*
-    Spin ring stays centred on ball,
-    but does NOT inherit ballGroup rotation.
-  */
+    if(t<1.45){
+        const p=t/1.45;
 
-  spinRing.position.copy(ballGroup.position);
+        const x=lerp(startX,.78,p);
 
-  orientSpinRing();
+        const arc=
+            Math.sin(p*Math.PI)*.65;
 
-  updateSpinRing(dt);
+        const y=
+            lerp(
+                BALL_START.y+.05,
+                1.73,
+                p
+            )
+            +arc;
 
-  renderer.render(scene,camera);
+        const z=
+            data.sideCurve *
+            strength *
+            p*p*.48;
+
+        ballGroup.position.set(x,y,z);
+
+        return;
+    }
+
+    /*
+    Segment 2:
+    bounce -> receiver
+    */
+
+    if(t<2.65){
+        const p=(t-1.45)/1.20;
+
+        const x=lerp(.78,2.30,p);
+
+        const bounceHeight=
+            .48 +
+            data.bounceLift*strength;
+
+        const y=
+            1.73 +
+            Math.sin(p*Math.PI) *
+            bounceHeight;
+
+        const z=
+            data.sideCurve *
+            strength *
+            (
+                .48 +
+                .58*p
+            );
+
+        ballGroup.position.set(x,y,z);
+
+        receiverPaddle.visible=true;
+
+        receiverPaddle.position.set(
+            2.58,
+            2.05,
+            z
+        );
+
+        return;
+    }
+
+    /*
+    Segment 3:
+    contact receiver paddle and deflect
+    */
+
+    const p=clamp(
+        (t-2.65)/1.1,
+        0,
+        1
+    );
+
+    receiverPaddle.visible=true;
+
+    const startZ=
+        data.sideCurve *
+        strength *
+        1.06;
+
+    ballGroup.position.set(
+        lerp(2.30,3.15,p),
+        lerp(
+            2.02,
+            2.35 +
+            data.bounceLift*1.5,
+            p
+        ),
+        startZ +
+        data.sideCurve *
+        strength *
+        .35*p
+    );
+
+    if(t>3.75){
+        running=false;
+        runBtn.textContent="↻ 再播放一次";
+        contactBadge.textContent="● 演示完成";
+    }
 }
+
+
+/* =========================================================
+   MOTION ARROWS
+========================================================= */
+
+function updateMotionArrows(forward,brush){
+    const data=SPINS[selectedSpin];
+
+    forwardArrow.visible=true;
+    brushArrow.visible=true;
+
+    const origin=paddleGroup.position.clone();
+
+    forwardArrow.position.copy(origin);
+
+    forwardArrow.setDirection(
+        new THREE.Vector3(1,0,0)
+    );
+
+    forwardArrow.setLength(
+        .25 +
+        forward*.09,
+        .14,
+        .07
+    );
+
+    brushArrow.position.copy(origin);
+
+    brushArrow.setDirection(
+        data.brush.clone().normalize()
+    );
+
+    brushArrow.setLength(
+        .18 +
+        brush*.10,
+        .14,
+        .07
+    );
+}
+
+
+/* =========================================================
+   UPDATE INFO
+========================================================= */
+
+function updateSpinInfo(){
+    const data=SPINS[selectedSpin];
+
+    lessonTitle.textContent=
+        `🏓 ${data.name} · 接触分解`;
+
+    lessonText.textContent=data.lesson;
+
+    infoTitle.textContent=data.name;
+    infoText.textContent=data.lesson;
+}
+
+
+/* =========================================================
+   BUTTON EVENTS
+========================================================= */
+
+document.querySelectorAll(".spin-btn")
+.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+        if(running) return;
+
+        document.querySelectorAll(".spin-btn")
+            .forEach(b=>b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        selectedSpin=btn.dataset.spin;
+
+        updateSpinInfo();
+        resetSimulation();
+    });
+});
+
+document.querySelectorAll(".view-btn")
+.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+        document.querySelectorAll(".view-btn")
+            .forEach(b=>b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        manualView=btn.dataset.view;
+
+        autoCamera=false;
+        autoCameraSwitch.classList.remove("on");
+    });
+});
+
+strengthInput.addEventListener("input",()=>{
+    strengthLabel.textContent=
+        strengthInput.value+"%";
+});
+
+autoCameraSwitch.addEventListener("click",()=>{
+    autoCamera=!autoCamera;
+    autoCameraSwitch.classList.toggle(
+        "on",
+        autoCamera
+    );
+});
+
+runBtn.addEventListener("click",()=>{
+    resetSimulation();
+
+    running=true;
+    paused=false;
+    elapsed=0;
+
+    runBtn.textContent="运行中…";
+});
+
+slowBtn.addEventListener("click",()=>{
+    slowMotion=!slowMotion;
+
+    slowBtn.classList.toggle(
+        "active",
+        slowMotion
+    );
+
+    slowBtn.textContent=
+        slowMotion
+        ? "🐢 0.35× 慢动作"
+        : "🐢 慢动作";
+});
+
+pauseBtn.addEventListener("click",()=>{
+    if(!running) return;
+
+    paused=!paused;
+
+    pauseBtn.textContent=
+        paused
+        ? "▶ 继续"
+        : "Ⅱ 暂停";
+});
+
+resetBtn.addEventListener("click",()=>{
+    resetSimulation();
+});
+
+
+/* =========================================================
+   MAIN LOOP
+========================================================= */
+
+function animate(now){
+    requestAnimationFrame(animate);
+
+    let dt=(now-lastTime)/1000;
+    lastTime=now;
+
+    dt=Math.min(dt,.04);
+
+    if(slowMotion){
+        dt*=.35;
+    }
+
+    if(running && !paused){
+        elapsed+=dt;
+
+        simulateContactPhase(
+            elapsed,
+            dt
+        );
+
+        updateTrail();
+    }
+
+    updateSpinVisual(dt);
+    updateCamera(dt);
+    updateMeters();
+
+    renderer.render(scene,camera);
+}
+
 
 /* =========================================================
    START
 ========================================================= */
 
-resize();
-resetScene();
-updateUI();
+updateSpinInfo();
+resetSimulation();
 
-requestAnimationFrame(render);
+requestAnimationFrame(animate);
 
 </script>
 </body>
